@@ -1,11 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
 import { initializeApp } from "firebase/app";
 import { firebaseConfig } from "/firebaseConfig.js";
 import { getFirestore } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-import './App.css'
+import './App.css';
+import SignIn from './SignIn';
+import SignUp from './SignUp';
+import Home from './Home';
+import About from './About';
+import Notfound from './Notfound';
+
 
 export default function App() {
   const app = initializeApp(firebaseConfig);
@@ -14,7 +21,7 @@ export default function App() {
 
   const router = createBrowserRouter([
     { path: "/", element: <SignIn /> },
-    { path: "/", element: <SignUp /> },
+    { path: "/signup", element: <SignUp /> },
     { path: "/home", element: <Home /> },
     { path: "/about", element: <About /> },
     { path: "*", element: <Notfound /> }

@@ -1,37 +1,66 @@
 import React from 'react';
-import { TextField } from '@mui/material';
-import Button from '@mui/material/Button';
+import { TextField, Button, Box, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 
 export default function Register() {
+  const inputWidthStyle = { width: '400px' };
 
   return (
-    <div className='login'>
-      <div id='loginTitle'>Regisztáció</div>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '80vh',
+        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
+      }}
+    >
+      <Typography 
+        component="div" 
+        sx={{ fontSize: '30px' }}
+      >
+        Regisztráció
+      </Typography>
 
       <TextField
-        id="outlined-search"
+        id="username"
         label="Felhasználónév"
         type="search"
-        className='loginBaseFormatLength'
+        sx={inputWidthStyle}
       />
+      
       <TextField
-        id="outlined-search"
+        id="email"
         label="Email"
         type="search"
-        className='loginBaseFormatLength'
+        sx={inputWidthStyle}
       />
+      
       <TextField
         id="outlined-password-input"
         label="Jelszó"
         type="password"
         autoComplete="current-password"
-        className='loginBaseFormatLength'
+        sx={inputWidthStyle}
       />
 
-      <Button variant="contained" className='loginBaseFormatLength' sx={{ fontSize:'15px', background:'#4361ee' }}>REGISZTÁCIÓ</Button>
+      <Button 
+        variant="contained" 
+        sx={{ 
+          ...inputWidthStyle, 
+          fontSize: '15px', 
+          background: '#4361ee',
+          '&:hover': { background: '#3752db' } // Opcionális: hover effekt
+        }}
+      >
+        REGISZTRÁCIÓ
+      </Button>
 
-      <span>Már van fiókod? <Link to="/login" >Bejelentkezés</Link></span>
-    </div>
-  )
+      <Box component="span">
+        Már van fiókod? <Link to="/login">Bejelentkezés</Link>
+      </Box>
+    </Box>
+  );
 }

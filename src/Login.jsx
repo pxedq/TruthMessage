@@ -1,31 +1,58 @@
 import React from 'react';
-import { TextField } from '@mui/material';
-import Button from '@mui/material/Button';
+import { TextField, Button, Box, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 
 export default function SignIn() {
+  const commonInputStyle = { width: '400px' };
 
   return (
-    <div className='login'>
-      <div id='loginTitle'>Bejelentkezés</div>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '80vh',
+        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
+      }}
+    >
+      <Typography 
+        component="div" 
+        sx={{ fontSize: '30px' }}
+      >
+        Bejelentkezés
+      </Typography>
 
       <TextField
         id="outlined-search"
         label="Email"
         type="search"
-        className='loginBaseFormatLength'
+        sx={commonInputStyle}
       />
+      
       <TextField
         id="outlined-password-input"
         label="Jelszó"
         type="password"
         autoComplete="current-password"
-        className='loginBaseFormatLength'
+        sx={commonInputStyle}
       />
 
-      <Button variant="contained" className='loginBaseFormatLength' sx={{ fontSize:'15px', background:'#4361ee' }}>BEJELENTKEZÉS</Button>
+      <Button 
+        variant="contained" 
+        sx={{ 
+          ...commonInputStyle, 
+          fontSize: '15px', 
+          background: '#4361ee' 
+        }}
+      >
+        BEJELENTKEZÉS
+      </Button>
 
-      <span>Nincs még fiókod? <Link to="/register">Regisztráció</Link></span>
-    </div>
-  )
+      <Box component="span">
+        Nincs még fiókod? <Link to="/register">Regisztráció</Link>
+      </Box>
+    </Box>
+  );
 }

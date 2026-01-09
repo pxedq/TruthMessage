@@ -8,7 +8,6 @@ import './App.css';
 import Login from './Login';
 import Register from './Register';
 import Home from './Home';
-import About from './About';
 import Notfound from './Notfound';
 
 export default function App() {
@@ -20,7 +19,6 @@ export default function App() {
     { path: "/", element: <Home /> },
     { path: "/login", element: <Login /> },
     { path: "/register", element: <Register /> },
-    { path: "/about", element: <About /> },
     { path: "*", element: <Notfound /> }
   ]);
 

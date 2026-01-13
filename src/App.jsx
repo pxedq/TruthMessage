@@ -8,9 +8,9 @@ import { firebaseConfig } from "../firebaseConfig.js"; // Feltételezzük, hogy 
 
 import SignIn from './SignIn';
 import Register from './Register';
+import Chat from './Chat';
 
 // Ideiglenes komponensek a hiányzó route-okhoz (hogy működjön a kód) !!!!!!!!!!!!!!!!!!!!!!!!!!! MAJD MEG IRNI
-const Chat = () => <div style={{textAlign:'center', marginTop:'50px'}}><h1>Üzenetek (Chat)</h1><p>Itt lesznek az üzenetek.</p></div>;
 const Users = () => <div style={{textAlign:'center', marginTop:'50px'}}><h1>Felhasználók</h1><p>Itt kezelheted a felhasználókat.</p></div>;
 
 // --- FIREBASE INICIALIZÁLÁS ---

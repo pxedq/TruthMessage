@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Box, 
-  TextField, 
   IconButton, 
-  Paper, 
   Typography, 
   Avatar, 
   Container, 
-  Stack,
-  Divider
+  Paper,
+  InputBase,
+  useTheme
 } from '@mui/material';
-import SendIcon from '@mui/icons-material/Send';
+import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import { 
   collection, 
   addDoc, 
@@ -19,19 +18,17 @@ import {
   onSnapshot, 
   serverTimestamp 
 } from 'firebase/firestore';
-import { db, auth } from './App'; // Importáljuk a db-t és auth-ot az App.jsx-ből
+import { db, auth } from './App';
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const scrollRef = useRef(); // Hivatkozás a chat aljára a görgetéshez
+  const scrollRef = useRef();
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
 
-  // --- Üzenetek lekérése valós időben ---
   useEffect(() => {
-    // Lekérdezés a 'messages' gyűjteményből, időrendben
     const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
-
-    // Feliratkozás a változásokra (real-time)
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const msgs = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -39,125 +36,139 @@ export default function Chat() {
       }));
       setMessages(msgs);
     });
-
     return () => unsubscribe();
   }, []);
 
-  // --- Görgetés az aljára új üzenetnél ---
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // --- Üzenet küldése ---
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (newMessage.trim() === "") return;
 
     try {
-      const { uid, displayName, email } = auth.currentUser;
-      
+      const { uid, displayName, email, photoURL } = auth.currentUser;
       await addDoc(collection(db, "messages"), {
         text: newMessage,
         createdAt: serverTimestamp(),
         uid,
-        displayName: displayName || email, // Ha nincs név, az email jelenik meg
-        photoURL: auth.currentUser.photoURL
+        displayName: displayName || email,
+        photoURL: photoURL || ""
       });
-
-      setNewMessage(''); // Input mező törlése
+      setNewMessage('');
     } catch (error) {
       console.error("Hiba az üzenet küldésekor:", error);
     }
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, height: '80vh', display: 'flex', flexDirection: 'column' }}>
+    <Container maxWidth="sm" sx={{ height: '85vh', display: 'flex', flexDirection: 'column', py: 2 }}>
       
       {/* Fejléc */}
-        <Typography variant="h5" align="center"  sx={{ fontSize: '30px', mb:2, textDecoration: 'underline' }}>
-          Truth message
+      <Box sx={{ pb: 2, borderBottom: '1px solid', borderColor: 'divider', mb: 2, textAlign: 'center' }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: -0.5 }}>
+          Truth Message
         </Typography>
+        <Typography variant="caption" color="text.secondary">
+          {messages.length} üzenet
+        </Typography>
+      </Box>
 
-      {/* Üzenetek listája (Scrollable area) */}
-      <Paper 
-        elevation={3} 
+      {/* Üzenetfolyam */}
+      <Box 
         sx={{ 
           flex: 1, 
           overflowY: 'auto', 
-          p: 2, 
-          mb: 2, 
-          bgcolor: '#fafafa',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: 1.5,
+          px: 1,
+          '&::-webkit-scrollbar': { width: '4px' },
+          '&::-webkit-scrollbar-thumb': { bgcolor: isDark ? '#333' : '#e0e0e0', borderRadius: '10px' }
         }}
       >
         {messages.map((msg) => {
-          // Ellenőrizzük, hogy én küldtem-e az üzenetet
           const isMe = msg.uid === auth.currentUser?.uid;
-
           return (
             <Box 
               key={msg.id} 
               sx={{ 
                 display: 'flex', 
                 justifyContent: isMe ? 'flex-end' : 'flex-start',
-                alignItems: 'flex-end',
-                gap: 1
+                mb: 0.5
               }}
             >
-              {/* Avatar csak másoknál (bal oldalon) */}
-              {!isMe && (
-                <Avatar sx={{ bgcolor: '#ff5722', width: 32, height: 32, fontSize: 14 }}>
-                  {msg.displayName?.charAt(0).toUpperCase() || '?'}
-                </Avatar>
-              )}
-
-              <Paper 
-                elevation={1} 
-                sx={{ 
-                  p: 1.5, 
-                  maxWidth: '70%', 
-                  bgcolor: isMe ? '#e3f2fd' : '#ffffff', // Saját üzenet kék, másé fehér
-                  borderRadius: isMe ? '20px 20px 0px 20px' : '20px 20px 20px 0px'
-                }}
-              >
+              <Box sx={{ display: 'flex', flexDirection: 'column', maxWidth: '80%' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexDirection: isMe ? 'row-reverse' : 'row' }}>
+                  <Avatar 
+                    src={msg.photoURL} 
+                    sx={{ width: 32, height: 32, fontSize: '0.8rem', bgcolor: isMe ? '#4361ee' : (isDark ? '#2a2a2e' : '#f0f0f0') }}
+                  >
+                    {msg.displayName?.charAt(0).toUpperCase()}
+                  </Avatar>
+                  
+                  <Paper 
+                    elevation={0} 
+                    sx={{ 
+                      p: '10px 16px', 
+                      bgcolor: isMe ? '#4361ee' : (isDark ? '#2a2a2e' : '#f4f4f7'), 
+                      color: isMe ? 'white' : 'text.primary',
+                      borderRadius: isMe ? '18px 18px 2px 18px' : '18px 18px 18px 2px',
+                    }}
+                  >
+                    <Typography variant="body2">
+                      {msg.text}
+                    </Typography>
+                  </Paper>
+                </Box>
                 {!isMe && (
-                  <Typography variant="caption" color="textSecondary" display="block" sx={{ mb: 0.5 }}>
+                  <Typography variant="caption" sx={{ ml: 5, mt: 0.5, color: 'text.disabled', fontSize: '0.7rem' }}>
                     {msg.displayName}
                   </Typography>
                 )}
-                <Typography variant="body1" sx={{ wordBreak: 'break-word' }}>
-                  {msg.text}
-                </Typography>
-              </Paper>
+              </Box>
             </Box>
           );
         })}
-        {/* Láthatatlan elem a görgetéshez */}
         <div ref={scrollRef} />
-      </Paper>
+      </Box>
 
-      {/* Input mező */}
-      <Paper 
+      {/* Beviteli mező */}
+      <Box 
         component="form" 
         onSubmit={handleSendMessage}
-        sx={{ p: '2px 4px', display: 'flex', alignItems: 'center' }}
+        sx={{ 
+          mt: 2,
+          p: '6px 12px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          bgcolor: isDark ? '#1e1e21' : '#f4f4f7', 
+          borderRadius: '24px',
+          transition: '0.2s',
+          border: '1px solid',
+          borderColor: 'transparent',
+          '&:focus-within': { 
+            bgcolor: isDark ? '#121214' : '#fff', 
+            borderColor: '#4361ee',
+            boxShadow: '0 0 0 2px #4361ee33' 
+          }
+        }}
       >
-        <TextField
-          sx={{ ml: 1, flex: 1 }}
-          placeholder="Írj egy üzenetet..."
-          variant="standard"
+        <InputBase
+          sx={{ ml: 1, flex: 1, fontSize: '0.95rem' }}
+          placeholder="Üzenet írása..."
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          InputProps={{ disableUnderline: true }}
         />
-        <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
-        <IconButton type="submit" color="primary" sx={{ p: '10px' }}>
-          <SendIcon />
+        <IconButton 
+          type="submit" 
+          disabled={!newMessage.trim()}
+          sx={{ color: '#4361ee' }}
+        >
+          <SendRoundedIcon />
         </IconButton>
-      </Paper>
-
+      </Box>
     </Container>
   );
 }

@@ -1,89 +1,136 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { 
+  AppBar, Toolbar, Typography, Button, Box, Container, 
+  IconButton, Tooltip, createTheme, ThemeProvider, CssBaseline 
+} from '@mui/material';
+
+// Ikonok
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
+import ForumRoundedIcon from '@mui/icons-material/ForumRounded';
+import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
+import Brightness4Icon from '@mui/icons-material/Brightness4'; // Dark mód ikon
+import Brightness7Icon from '@mui/icons-material/Brightness7'; // Light mód ikon
 
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
-import { firebaseConfig } from "../firebaseConfig.js"; // Feltételezzük, hogy ez létezik
+import { firebaseConfig } from "../firebaseConfig.js";
 
 import SignIn from './SignIn';
 import Register from './Register';
 import Chat from './Chat';
+import Users from './Users';
+import NotFound from './Notfound.jsx';
 
-// Ideiglenes komponensek a hiányzó route-okhoz (hogy működjön a kód) !!!!!!!!!!!!!!!!!!!!!!!!!!! MAJD MEG IRNI
-const Users = () => <div style={{textAlign:'center', marginTop:'50px'}}><h1>Felhasználók</h1><p>Itt kezelheted a felhasználókat.</p></div>;
-
-// --- FIREBASE INICIALIZÁLÁS ---
+// Firebase inicializálás
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
-// --- APP KOMPONENS ---
 function App() {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Hogy ne villanjon be a Login, amíg betöltünk
+  const [loading, setLoading] = useState(true);
+  
+  // Dark mode állapota (alapértelmezett a mentett vagy a light)
+  const [mode, setMode] = useState(localStorage.getItem('themeMode') || 'light');
 
-  // Felhasználó állapotának figyelése (Login / Logout detektálása)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      setLoading(false); // Betöltés kész
+      setLoading(false);
     });
-    return () => unsubscribe(); // Cleanup
+    return () => unsubscribe();
   }, []);
 
-  // Kijelentkezés funkció
-  const handleLogout = async () => {
-    await signOut(auth);
+  // Téma létrehozása
+  const theme = useMemo(() => createTheme({
+    palette: {
+      mode,
+      primary: { main: '#4361ee' },
+      background: {
+        default: mode === 'light' ? '#f8f9fa' : '#0a0a0c',
+        paper: mode === 'light' ? '#ffffff' : '#121214',
+      },
+    },
+    shape: { borderRadius: 12 },
+    typography: { fontFamily: 'Inter, system-ui, sans-serif' }
+  }), [mode]);
+
+  const toggleColorMode = () => {
+    const newMode = mode === 'light' ? 'dark' : 'light';
+    setMode(newMode);
+    localStorage.setItem('themeMode', newMode);
   };
 
-  // Védett útvonal komponens (Protected Route)
-  // Ha nincs user, visszadob a loginra
+  const handleLogout = () => signOut(auth);
+
   const ProtectedRoute = ({ children }) => {
-    if (!user) {
-      return <Navigate to="/login" replace />;
-    }
+    if (!user) return <Navigate to="/login" replace />;
     return children;
   };
 
-  if (loading) {
-    return <div style={{display:'flex', justifyContent:'center', marginTop:'20%'}}>Betöltés...</div>;
-  }
+  if (loading) return null;
 
   return (
-    <BrowserRouter>
-      {/* Egyszerű navigációs sáv, csak ha be vagyunk lépve */}
-      {user && (
-        <nav style={{ padding: '10px', background: '#eee', display: 'flex', gap: '15px', justifyContent: 'center' }}>
-          <Link to="/">Chat</Link>
-          <Link to="/users">Felhasználók</Link>
-          <button onClick={handleLogout} style={{cursor:'pointer', marginLeft:'20px'}}>Kijelentkezés</button>
-          <span style={{marginLeft: 'auto'}}>Belépve: {user.email}</span>
-        </nav>
-      )}
+    <ThemeProvider theme={theme}>
+      <CssBaseline /> {/* Ez állítja be a globális háttérszínt */}
+      <BrowserRouter>
+        {user && (
+          <AppBar 
+            position="sticky" 
+            elevation={0} 
+            sx={{ 
+              bgcolor: mode === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(18, 18, 20, 0.8)', 
+              backdropFilter: 'blur(8px)', 
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+              color: 'text.primary' 
+            }}
+          >
+            <Container maxWidth="md">
+              <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button component={Link} to="/" startIcon={<ForumRoundedIcon />} sx={{ textTransform: 'none', fontWeight: 600 }}>
+                    Chat
+                  </Button>
+                  <Button component={Link} to="/users" startIcon={<PeopleAltRoundedIcon />} sx={{ textTransform: 'none', fontWeight: 600, color: 'text.secondary' }}>
+                    Felhasználók
+                  </Button>
+                </Box>
 
-      <Routes>
-        {/* 1. Route: Bejelentkezés */}
-        <Route path="/login" element={!user ? <SignIn /> : <Navigate to="/" />} />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {/* Dark Mode Kapcsoló */}
+                  <Tooltip title={mode === 'dark' ? "Világos mód" : "Sötét mód"}>
+                    <IconButton onClick={toggleColorMode} color="inherit">
+                      {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+                    </IconButton>
+                  </Tooltip>
 
-        {/* 2. Route: Regisztráció */}
-        <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+                  <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' }, color: 'text.secondary', mx: 1 }}>
+                    {user.email}
+                  </Typography>
+                  
+                  <Tooltip title="Kijelentkezés">
+                    <IconButton onClick={handleLogout} sx={{ color: '#ff4d4f' }}>
+                      <LogoutRoundedIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Toolbar>
+            </Container>
+          </AppBar>
+        )}
 
-        {/* 3. Route: Chat (Főoldal) - VÉDETT */}
-        <Route path="/" element={
-          <ProtectedRoute>
-            <Chat />
-          </ProtectedRoute>
-        } />
-
-        {/* 4. Route: Felhasználók kezelése - VÉDETT */}
-        <Route path="/users" element={
-          <ProtectedRoute>
-            <Users />
-          </ProtectedRoute>
-        } />
-      </Routes>
-    </BrowserRouter>
+        <Routes>
+          <Route path="/login" element={!user ? <SignIn /> : <Navigate to="/" />} />
+          <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+          <Route path="/" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+          <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

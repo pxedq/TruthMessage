@@ -1,97 +1,76 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography, Alert } from '@mui/material';
+import { TextField, Button, Box, Typography, Alert, Container, Paper, useTheme } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-// Fontos: Importáljuk az auth objektumot, amit az App.jsx-ben hoztunk létre!
 import { auth } from './App'; 
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  
   const navigate = useNavigate();
-
-  // Közös stílus a fix szélességű elemeknek
-  const commonInputStyle = { width: '400px' };
+  const theme = useTheme();
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // Megakadályozza az oldal újratöltését submitkor
-    setError(''); // Töröljük az előző hibaüzenetet
-
+    e.preventDefault();
+    setError('');
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // Ha sikeres, a navigate átirányít a főoldalra (Chat)
       navigate('/'); 
     } catch (err) {
-      console.error("Login hiba:", err);
-      // Itt finomíthatod a hibaüzeneteket a hiba kódja alapján (err.code)
       setError("Hibás email cím vagy jelszó!");
     }
   };
 
   return (
-    <Box
-      component="form" // Formmá alakítjuk, hogy az Enter gomb is működjön
-      onSubmit={handleLogin}
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '20px',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
-      }}
-    >
-      <Typography component="div" sx={{ fontSize: '30px' }}>
-        Bejelentkezés
-      </Typography>
+    <Container maxWidth="xs" sx={{ height: '100vh', display: 'flex', alignItems: 'center' }}>
+      <Paper elevation={0} sx={{ p: 4, width: '100%', borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+        <Box component="form" onSubmit={handleLogin} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          <Typography variant="h5" align="center" sx={{ fontWeight: 700, mb: 1 }}>
+            Üdv újra!
+          </Typography>
+          
+          {error && <Alert severity="error">{error}</Alert>}
 
-      {/* Hibaüzenet megjelenítése, ha van */}
-      {error && (
-        <Alert severity="error" sx={commonInputStyle}>
-          {error}
-        </Alert>
-      )}
+          <TextField
+            label="Email"
+            type="email"
+            required
+            fullWidth
+            variant="filled"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            InputProps={{ disableUnderline: true, sx: { borderRadius: 2 } }}
+          />
+          
+          <TextField
+            label="Jelszó"
+            type="password"
+            required
+            fullWidth
+            variant="filled"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            InputProps={{ disableUnderline: true, sx: { borderRadius: 2 } }}
+          />
 
-      <TextField
-        id="email"
-        label="Email"
-        type="email"
-        required
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        sx={commonInputStyle}
-      />
-      
-      <TextField
-        id="password"
-        label="Jelszó"
-        type="password"
-        autoComplete="current-password"
-        required
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        sx={commonInputStyle}
-      />
+          <Button 
+            type="submit" 
+            variant="contained" 
+            size="large"
+            sx={{ py: 1.5, textTransform: 'none', fontWeight: 600, borderRadius: 2 }}
+          >
+            Bejelentkezés
+          </Button>
 
-      <Button 
-        type="submit" // Fontos: submit típusú legyen, hogy elsüsse a formot
-        variant="contained" 
-        sx={{ 
-          ...commonInputStyle, 
-          fontSize: '15px', 
-          background: '#4361ee',
-          '&:hover': { background: '#3752db' }
-        }}
-      >
-        BEJELENTKEZÉS
-      </Button>
-
-      <Box component="span">
-        Nincs még fiókod? <Link to="/register">Regisztráció</Link>
-      </Box>
-    </Box>
+          <Typography variant="body2" align="center" color="text.secondary">
+            Nincs még fiókod? {' '}
+            <Link to="/register" style={{ color: theme.palette.primary.main, textDecoration: 'none', fontWeight: 600 }}>
+              Regisztrálj
+            </Link>
+          </Typography>
+        </Box>
+      </Paper>
+    </Container>
   );
 }

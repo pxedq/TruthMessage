@@ -16,4 +16,4 @@ Valós idejű chat alkalmazás React, Material UI és Firebase (Firestore & Auth
 3. **UI/UX:** Reszponzív design, Sötét/Világos téma váltó, Loading statek.
 
 > [!NOTE]
-> A program linkje: [truth-message.netlify.app]
+> A program linkje: [truth-message.netlify.app](truth-message.netlify.app)

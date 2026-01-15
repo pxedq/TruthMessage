@@ -17,6 +17,8 @@ import { getFirestore } from "firebase/firestore";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { firebaseConfig } from "../firebaseConfig.js";
 
+import Profil from './Profil';
+import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import SignIn from './SignIn';
 import Register from './Register';
 import Chat from './Chat';
@@ -97,6 +99,14 @@ function App() {
                   <Button component={Link} to="/users" startIcon={<PeopleAltRoundedIcon />} sx={{ textTransform: 'none', fontWeight: 600, color: 'text.secondary' }}>
                     Felhasználók
                   </Button>
+                  <Button 
+                    component={Link} 
+                    to="/profile" 
+                    startIcon={<AccountCircleRoundedIcon />}
+                    sx={{ textTransform: 'none', fontWeight: 600, color: 'text.secondary' }}
+                  >
+                    Profil
+                  </Button>
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -127,6 +137,7 @@ function App() {
           <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
           <Route path="/" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
           <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profil /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
